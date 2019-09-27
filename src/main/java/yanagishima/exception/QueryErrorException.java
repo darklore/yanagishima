@@ -6,19 +6,21 @@ import java.sql.SQLException;
 
 public class QueryErrorException extends Exception {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private String queryId;
-	
-	public QueryErrorException(SQLException cause) {
-		super(cause);
-	}
-	
-	public QueryErrorException(String queryId, SQLException cause) {
-		super(cause);
-		this.queryId = queryId;
-	}
+    private String queryId;
 
-	public String getQueryId() { return queryId; }
+    public QueryErrorException(SQLException cause) {
+        super(cause);
+    }
+
+    public QueryErrorException(String queryId, SQLException cause) {
+        super(cause);
+        this.queryId = queryId;
+    }
+
+    public String getQueryId() {
+        return queryId;
+    }
 
 }

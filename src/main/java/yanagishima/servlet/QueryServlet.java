@@ -31,132 +31,138 @@ import static javax.servlet.http.HttpServletResponse.SC_OK;
 @Singleton
 public class QueryServlet extends HttpServlet {
 
-	private static Logger LOGGER = LoggerFactory.getLogger(QueryServlet.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(QueryServlet.class);
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private YanagishimaConfig yanagishimaConfig;
+    private YanagishimaConfig yanagishimaConfig;
 
-	@Inject
-	private TinyORM db;
+    @Inject
+    private TinyORM db;
 
-	private static final int LIMIT = 100;
+    private static final int LIMIT = 100;
 
-	private OkHttpClient httpClient = new OkHttpClient();
+    private OkHttpClient httpClient = new OkHttpClient();
 
-	@Inject
-	public QueryServlet(YanagishimaConfig yanagishimaConfig) {
-		this.yanagishimaConfig = yanagishimaConfig;
-	}
+    @Inject
+    public QueryServlet(YanagishimaConfig yanagishimaConfig) {
+        this.yanagishimaConfig = yanagishimaConfig;
+    }
 
-	@Override
-	protected void doPost(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-		response.setContentType("application/json");
-		PrintWriter writer = response.getWriter();
-		String datasource = HttpRequestUtil.getParam(request, "datasource");
-		if(yanagishimaConfig.isCheckDatasource()) {
-			if(!AccessControlUtil.validateDatasource(request, datasource)) {
-				try {
-					response.sendError(SC_FORBIDDEN);
-					return;
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
-			}
-		}
-		String prestoCoordinatorServer = yanagishimaConfig.getPrestoCoordinatorServerOrNull(datasource);
-		if(prestoCoordinatorServer == null) {
-			writer.println("[]");
-			return;
-		}
+        response.setContentType("application/json");
+        PrintWriter writer = response.getWriter();
+        String datasource = HttpRequestUtil.getParam(request, "datasource");
+        if (yanagishimaConfig.isCheckDatasource()) {
+            if (!AccessControlUtil.validateDatasource(request, datasource)) {
+                try {
+                    response.sendError(SC_FORBIDDEN);
+                    return;
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        String prestoCoordinatorServer = yanagishimaConfig.getPrestoCoordinatorServerOrNull(datasource);
+        if (prestoCoordinatorServer == null) {
+            writer.println("[]");
+            return;
+        }
 
-		String originalJson = null;
-		Request prestoRequest = new Request.Builder().url(prestoCoordinatorServer + "/v1/query").build();
+        String originalJson = null;
+        Request prestoRequest = new Request.Builder().url(prestoCoordinatorServer + "/v1/query").build();
 
-		Optional<String> prestoUser = Optional.ofNullable(request.getParameter("user"));
-		Optional<String> prestoPassword = Optional.ofNullable(request.getParameter("password"));
-		if (prestoUser.isPresent() && prestoPassword.isPresent()) {
-			if(prestoUser.get().length() == 0) {
-				HashMap<String, Object> retVal = new HashMap<String, Object>();
-				retVal.put("error", "user is empty");
-				ObjectMapper mapper = new ObjectMapper();
-				String json = mapper.writeValueAsString(retVal);
-				writer.println(json);
-				return;
-			}
-			OkHttpClient.Builder clientBuilder = httpClient.newBuilder();
-			clientBuilder.addInterceptor(basicAuth(prestoUser.get(), prestoPassword.get()));
-			try (Response prestoResponse = clientBuilder.build().newCall(prestoRequest).execute()) {
-				originalJson = prestoResponse.body().string();
-				int code = prestoResponse.code();
-				if(code != SC_OK) {
-					HashMap<String, Object> retVal = new HashMap<String, Object>();
-					retVal.put("code", code);
-					retVal.put("error", prestoResponse.message());
-					ObjectMapper mapper = new ObjectMapper();
-					String json = mapper.writeValueAsString(retVal);
-					writer.println(json);
-					return;
-				}
-			}
-		} else {
-			try (Response prestoResponse = httpClient.newCall(prestoRequest).execute()) {
-				originalJson = prestoResponse.body().string();
-				int code = prestoResponse.code();
-				if(code != SC_OK) {
-					HashMap<String, Object> retVal = new HashMap<String, Object>();
-					retVal.put("code", code);
-					retVal.put("error", prestoResponse.message());
-					ObjectMapper mapper = new ObjectMapper();
-					String json = mapper.writeValueAsString(retVal);
-					writer.println(json);
-					return;
-				}
+        Optional<String> prestoUser = Optional.ofNullable(request.getParameter("user"));
+        Optional<String> prestoPassword = Optional.ofNullable(request.getParameter("password"));
+        if (prestoUser.isPresent() && prestoPassword.isPresent()) {
+            if (prestoUser.get().length() == 0) {
+                HashMap<String, Object> retVal = new HashMap<String, Object>();
+                retVal.put("error", "user is empty");
+                ObjectMapper mapper = new ObjectMapper();
+                String json = mapper.writeValueAsString(retVal);
+                writer.println(json);
+                return;
+            }
+            OkHttpClient.Builder clientBuilder = httpClient.newBuilder();
+            clientBuilder.addInterceptor(basicAuth(prestoUser.get(), prestoPassword.get()));
+            try (Response prestoResponse = clientBuilder.build().newCall(prestoRequest).execute()) {
+                originalJson = prestoResponse.body().string();
+                int code = prestoResponse.code();
+                if (code != SC_OK) {
+                    HashMap<String, Object> retVal = new HashMap<String, Object>();
+                    retVal.put("code", code);
+                    retVal.put("error", prestoResponse.message());
+                    ObjectMapper mapper = new ObjectMapper();
+                    String json = mapper.writeValueAsString(retVal);
+                    writer.println(json);
+                    return;
+                }
+            }
+        } else {
+            try (Response prestoResponse = httpClient.newCall(prestoRequest).execute()) {
+                originalJson = prestoResponse.body().string();
+                int code = prestoResponse.code();
+                if (code != SC_OK) {
+                    HashMap<String, Object> retVal = new HashMap<String, Object>();
+                    retVal.put("code", code);
+                    retVal.put("error", prestoResponse.message());
+                    ObjectMapper mapper = new ObjectMapper();
+                    String json = mapper.writeValueAsString(retVal);
+                    writer.println(json);
+                    return;
+                }
 
-			}
-		}
+            }
+        }
 
-		ObjectMapper mapper = new ObjectMapper();
-		List<Map> list = mapper.readValue(originalJson, List.class);
-		List<Map> runningList = list.stream().filter(m -> m.get("state").equals("RUNNING")).collect(Collectors.toList());;
-		List<Map> notRunningList = list.stream().filter(m -> !m.get("state").equals("RUNNING")).collect(Collectors.toList());;
-		runningList.sort((a,b)-> String.class.cast(b.get("queryId")).compareTo(String.class.cast(a.get("queryId"))));
-		notRunningList.sort((a,b)-> String.class.cast(b.get("queryId")).compareTo(String.class.cast(a.get("queryId"))));
+        ObjectMapper mapper = new ObjectMapper();
+        List<Map> list = mapper.readValue(originalJson, List.class);
+        List<Map> runningList = list.stream().filter(m -> m.get("state").equals("RUNNING"))
+                .collect(Collectors.toList());
+        ;
+        List<Map> notRunningList = list.stream().filter(m -> !m.get("state").equals("RUNNING"))
+                .collect(Collectors.toList());
+        ;
+        runningList.sort((a, b) -> String.class.cast(b.get("queryId")).compareTo(String.class.cast(a.get("queryId"))));
+        notRunningList
+                .sort((a, b) -> String.class.cast(b.get("queryId")).compareTo(String.class.cast(a.get("queryId"))));
 
-		List<Map> limitedList = new ArrayList<>();
-		limitedList.addAll(runningList);
-		if(list.size() > LIMIT) {
-			limitedList.addAll(notRunningList.subList(0, LIMIT - runningList.size()));
-		} else {
-			limitedList.addAll(notRunningList.subList(0, list.size() - runningList.size()));
-		}
+        List<Map> limitedList = new ArrayList<>();
+        limitedList.addAll(runningList);
+        if (list.size() > LIMIT) {
+            limitedList.addAll(notRunningList.subList(0, LIMIT - runningList.size()));
+        } else {
+            limitedList.addAll(notRunningList.subList(0, list.size() - runningList.size()));
+        }
 
-		List<String> queryidList = new ArrayList<>();
-		for(Map m : limitedList) {
-			queryidList.add((String)m.get("queryId"));
-		}
+        List<String> queryidList = new ArrayList<>();
+        for (Map m : limitedList) {
+            queryidList.add((String) m.get("queryId"));
+        }
 
-		String placeholder = queryidList.stream().map(r -> "?").collect(Collectors.joining(", "));
-		List<Query> queryList = db.searchBySQL(Query.class,
-				"SELECT engine, query_id, fetch_result_time_string, query_string FROM query WHERE engine='presto' and datasource=\'" + datasource + "\' and query_id IN (" + placeholder + ")",
-				queryidList.stream().collect(Collectors.toList()));
+        String placeholder = queryidList.stream().map(r -> "?").collect(Collectors.joining(", "));
+        List<Query> queryList = db.searchBySQL(Query.class,
+                "SELECT engine, query_id, fetch_result_time_string, query_string FROM query WHERE engine='presto' and datasource=\'"
+                        + datasource + "\' and query_id IN (" + placeholder + ")",
+                queryidList.stream().collect(Collectors.toList()));
 
-		List<String> existdbQueryidList = new ArrayList<>();
-		for(Query query : queryList) {
-			existdbQueryidList.add(query.getQueryId());
-		}
-		for(Map m : limitedList) {
-			String queryid = (String)m.get("queryId");
-			if(existdbQueryidList.contains(queryid)) {
-				m.put("existdb", true);
-			} else {
-				m.put("existdb", false);
-			}
-		}
-		String json = mapper.writeValueAsString(limitedList);
-		writer.println(json);
-	}
+        List<String> existdbQueryidList = new ArrayList<>();
+        for (Query query : queryList) {
+            existdbQueryidList.add(query.getQueryId());
+        }
+        for (Map m : limitedList) {
+            String queryid = (String) m.get("queryId");
+            if (existdbQueryidList.contains(queryid)) {
+                m.put("existdb", true);
+            } else {
+                m.put("existdb", false);
+            }
+        }
+        String json = mapper.writeValueAsString(limitedList);
+        writer.println(json);
+    }
 
 }

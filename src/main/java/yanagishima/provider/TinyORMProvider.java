@@ -8,13 +8,13 @@ import java.sql.Connection;
 
 public class TinyORMProvider implements Provider<TinyORM> {
 
-	@Inject
-	private Connection connection;
+    @Inject
+    private Connection connection;
 
-	@Override
-	public TinyORM get() {
-		TinyORM tinyORM =  new TinyORM(connection);
-		tinyORM.setQueryTimeout(30);
-		return tinyORM;
-	}
+    @Override
+    public TinyORM get() {
+        TinyORM tinyORM = new TinyORM(connection);
+        tinyORM.setQueryTimeout(30);
+        return tinyORM;
+    }
 }

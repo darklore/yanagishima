@@ -19,36 +19,36 @@ import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 @Singleton
 public class QueryDetailServlet extends HttpServlet {
 
-	private static Logger LOGGER = LoggerFactory.getLogger(QueryDetailServlet.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(QueryDetailServlet.class);
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private YanagishimaConfig yanagishimaConfig;
+    private YanagishimaConfig yanagishimaConfig;
 
-	@Inject
-	public QueryDetailServlet(YanagishimaConfig yanagishimaConfig) {
-		this.yanagishimaConfig = yanagishimaConfig;
-	}
+    @Inject
+    public QueryDetailServlet(YanagishimaConfig yanagishimaConfig) {
+        this.yanagishimaConfig = yanagishimaConfig;
+    }
 
-	@Override
-	protected void doGet(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+    @Override
+    protected void doGet(HttpServletRequest request,
+                         HttpServletResponse response) throws ServletException, IOException {
 
-		String datasource = HttpRequestUtil.getParam(request, "datasource");
-		if(yanagishimaConfig.isCheckDatasource()) {
-			if(!AccessControlUtil.validateDatasource(request, datasource)) {
-				try {
-					response.sendError(SC_FORBIDDEN);
-					return;
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
-			}
-		}
-		String prestoRedirectServerServer = yanagishimaConfig
-				.getPrestoRedirectServer(datasource);
-		response.sendRedirect(prestoRedirectServerServer + "/query.html?" + request.getParameter("queryid"));
+        String datasource = HttpRequestUtil.getParam(request, "datasource");
+        if (yanagishimaConfig.isCheckDatasource()) {
+            if (!AccessControlUtil.validateDatasource(request, datasource)) {
+                try {
+                    response.sendError(SC_FORBIDDEN);
+                    return;
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        String prestoRedirectServerServer = yanagishimaConfig
+            .getPrestoRedirectServer(datasource);
+        response.sendRedirect(prestoRedirectServerServer + "/query.html?" + request.getParameter("queryid"));
 
-	}
+    }
 
 }

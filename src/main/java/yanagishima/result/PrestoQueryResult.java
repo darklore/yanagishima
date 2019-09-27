@@ -5,71 +5,71 @@ import io.airlift.units.DataSize;
 import java.util.List;
 
 public class PrestoQueryResult {
-	
-	private String updateType;
-	
-	private List<String> columns;
-	
-	private List<List<String>> records;
-	
-	private String warningMessage;
 
-	private String queryId;
+    private String updateType;
 
-	private int lineNumber;
+    private List<String> columns;
 
-	private DataSize rawDataSize;
+    private List<List<String>> records;
 
-	public String getUpdateType() {
-		return updateType;
-	}
+    private String warningMessage;
 
-	public void setUpdateType(String updateType) {
-		this.updateType = updateType;
-	}
+    private String queryId;
 
-	public List<String> getColumns() {
-		return columns;
-	}
+    private int lineNumber;
 
-	public void setColumns(List<String> columns) {
-		this.columns = columns;
-	}
+    private DataSize rawDataSize;
 
-	public List<List<String>> getRecords() {
-		return records;
-	}
+    public String getUpdateType() {
+        return updateType;
+    }
 
-	public void setRecords(List<List<String>> records) {
-		this.records = records;
-	}
+    public void setUpdateType(String updateType) {
+        this.updateType = updateType;
+    }
 
-	public String getWarningMessage() {
-		return warningMessage;
-	}
+    public List<String> getColumns() {
+        return columns;
+    }
 
-	public void setWarningMessage(String warningMessage) {
-		this.warningMessage = warningMessage;
-	}
+    public void setColumns(List<String> columns) {
+        this.columns = columns;
+    }
 
-	public String getQueryId() { return queryId; }
+    public List<List<String>> getRecords() {
+        return records;
+    }
 
-	public void setQueryId(String queryId) { this.queryId = queryId; }
+    public void setRecords(List<List<String>> records) {
+        this.records = records;
+    }
 
-	public int getLineNumber() {
-		return lineNumber;
-	}
+    public String getWarningMessage() {
+        return warningMessage;
+    }
 
-	public void setLineNumber(int lineNumber) {
-		this.lineNumber = lineNumber;
-	}
+    public void setWarningMessage(String warningMessage) {
+        this.warningMessage = warningMessage;
+    }
 
-	public DataSize getRawDataSize() {
-		return rawDataSize;
-	}
+    public String getQueryId() { return queryId; }
 
-	public void setRawDataSize(DataSize rawDataSize) {
-		this.rawDataSize = rawDataSize;
-	}
+    public void setQueryId(String queryId) { this.queryId = queryId; }
+
+    public int getLineNumber() {
+        return lineNumber;
+    }
+
+    public void setLineNumber(int lineNumber) {
+        this.lineNumber = lineNumber;
+    }
+
+    public DataSize getRawDataSize() {
+        return rawDataSize;
+    }
+
+    public void setRawDataSize(DataSize rawDataSize) {
+        this.rawDataSize = rawDataSize;
+    }
 
 }
